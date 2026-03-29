@@ -18,7 +18,7 @@ spec:
       containers:
         - name: model-server
           # WINGS Bot updates this tag on every deploy
-          image: ak3hay/drug-test-classifier:latest
+          image: ak3hay/drug-test-classifier:ce0fabb
           ports:
             - containerPort: 8080
           env:
