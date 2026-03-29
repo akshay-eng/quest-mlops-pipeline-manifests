@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: drug-test-classifier
+  namespace: quest-mlops
+  labels:
+    app: drug-test-classifier
+spec:
+  selector:
+    app: drug-test-classifier
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  type: ClusterIP

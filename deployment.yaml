@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drug-test-classifier
+  namespace: quest-mlops
+  labels:
+    app: drug-test-classifier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drug-test-classifier
+  template:
+    metadata:
+      labels:
+        app: drug-test-classifier
+    spec:
+      containers:
+        - name: model-server
+          # WINGS Bot updates this tag on every deploy
+          image: ak3hay/drug-test-classifier:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: LOG_PATH
+              value: /data/predictions.jsonl
+            - name: REFERENCE_PATH
+              value: /app/data/reference.jsonl
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: predictions
+              mountPath: /data
+      volumes:
+        - name: predictions
+          persistentVolumeClaim:
+            claimName: predictions-pvc

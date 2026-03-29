@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: evidently-monitor
+  namespace: quest-mlops
+spec:
+  # Runs every 30 minutes — uploads DataDrift + Classification report to Evidently Cloud
+  schedule: "*/30 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: evidently-monitor
+              # Reuses the same image — different entrypoint
+              image: ak3hay/drug-test-classifier:latest
+              command: ["python", "monitor_evidently.py"]
+              env:
+                - name: EVIDENTLY_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: evidently-secret
+                      key: api_key
+                - name: EVIDENTLY_PROJECT_ID
+                  value: "019d38af-88af-77a3-b6f0-ce8bb837307c"
+                - name: LOG_PATH
+                  value: /data/predictions.jsonl
+                - name: REFERENCE_PATH
+                  value: /app/data/reference.jsonl
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 256Mi
+                limits:
+                  cpu: 200m
+                  memory: 512Mi
+              volumeMounts:
+                - name: predictions
+                  mountPath: /data
+          volumes:
+            - name: predictions
+              persistentVolumeClaim:
+                claimName: predictions-pvc
