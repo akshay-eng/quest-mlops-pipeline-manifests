@@ -4,8 +4,8 @@ metadata:
   name: evidently-monitor
   namespace: quest-mlops
 spec:
-  # Runs every 30 minutes — uploads DataDrift + Classification report to Evidently Cloud
-  schedule: "*/30 * * * *"
+  # Runs every 5 minutes — saves DataDrift report to PVC
+  schedule: "*/5 * * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
@@ -31,6 +31,8 @@ spec:
                   value: /data/predictions.jsonl
                 - name: REFERENCE_PATH
                   value: /app/data/reference.jsonl
+                - name: OUTPUT_DIR
+                  value: /data
               resources:
                 requests:
                   cpu: 50m
